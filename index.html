@@ -36,49 +36,41 @@
 
         .serie-input {
             background-color: #0c0c0c; border: 1px solid #1f1f23; border-radius: 0.75rem;
-            padding: 0.85rem 0.5rem; text-align: center; font-weight: 900;
+            padding: 0.75rem 0.5rem; text-align: center; font-weight: 900;
             font-size: 0.9rem; color: white; outline: none;
         }
 
         .scroll-container {
             flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-            padding-bottom: 120px; overscroll-behavior-y: contain;
+            padding-bottom: 40px; overscroll-behavior-y: contain;
         }
 
-        /* Poprawione style okna edycji pod iPhone */
-        .modal-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); }
-        .modal-content {
-            background: #1c1c1e;
-            border: 1px solid #2c2c2e;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-        .app-card { background: rgba(28, 28, 30, 0.6); border: 1px solid rgba(44, 44, 46, 0.8); }
+        .modal-overlay { background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
+        .app-card { background: rgba(24, 24, 27, 0.4); border: 1px solid rgba(39, 39, 42, 0.5); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="text-slate-100">
     <div id="app" class="max-w-md mx-auto"></div>
 
-    <!-- Timer Edit Modal - POPRAWIONY UKŁAD -->
-    <div id="timer-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-6">
-        <div class="modal-content p-8 rounded-[2.5rem] w-full max-w-[320px]">
-            <h3 class="text-center font-black uppercase italic text-yellow-400 mb-8 tracking-[0.15em] text-[10px]">Ustaw czas przerwy</h3>
-            
-            <div class="bg-black border border-zinc-800 flex items-center justify-center gap-3 mb-8 py-6 rounded-2xl">
+    <!-- Timer Modal -->
+    <div id="timer-modal" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-8">
+        <div class="bg-[#121214] border border-zinc-800 p-8 rounded-[2.5rem] w-full max-w-sm shadow-2xl">
+            <h3 class="text-center font-black uppercase italic text-yellow-400 mb-6 tracking-[0.2em] text-xs">Ustaw czas przerwy</h3>
+            <div class="bg-[#080808] border-2 border-zinc-900 flex items-center justify-center gap-2 mb-8 p-6 rounded-3xl">
                 <input id="timer-input" type="number" pattern="[0-9]*" inputmode="numeric" 
-                       class="w-24 bg-transparent text-right font-digit text-4xl font-black text-white outline-none" 
+                       class="w-32 bg-transparent text-center font-digit text-4xl font-black text-white outline-none" 
                        placeholder="180">
-                <span class="font-black text-zinc-500 italic uppercase text-[10px] pr-2">Sek</span>
+                <span class="font-black text-zinc-600 italic uppercase text-[10px]">Sek</span>
             </div>
-
-            <div class="flex flex-col gap-3">
-                <button onclick="confirmTimerEdit()" class="w-full py-5 bg-yellow-400 text-black rounded-2xl font-black uppercase text-[11px] italic shadow-lg active:scale-95 transition-all">Zapisz ustawienia</button>
-                <button onclick="closeTimerModal()" class="w-full py-4 bg-transparent text-zinc-500 rounded-2xl font-black uppercase text-[10px] tracking-widest active:opacity-50 transition-all">Anuluj</button>
+            <div class="flex gap-4">
+                <button onclick="closeTimerModal()" class="flex-1 py-4 bg-zinc-800/50 text-zinc-400 rounded-2xl font-black uppercase text-[10px]">Anuluj</button>
+                <button onclick="confirmTimerEdit()" class="flex-1 py-4 bg-yellow-400 text-black rounded-2xl font-black uppercase text-[10px] italic">Zapisz</button>
             </div>
         </div>
     </div>
 
     <script>
-        const STORAGE_KEY = 'iphone_v2_storage';
+        const STORAGE_KEY = 'iphone_workout_data_v2';
         const defaultPlan = {
             'TRENING A': ['Przysiad', 'Podciąganie', 'Rozpiętki skos', 'Y-Raise skos', 'Łydki'],
             'TRENING B': ['Martwy ciąg', 'Dipy', 'Wyciskanie hantle', 'Biceps 7x7x7', 'Zwis brzuch'],
@@ -150,7 +142,7 @@
             const cur = state.workouts[state.activeWorkoutType];
             if (!cur.some(e => e.s1 || e.s2 || e.s3)) return;
             state.history.unshift({
-                id: Date.now(), date: new Date().toLocaleString('pl-PL', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }),
+                id: Date.now(), date: new Date().toLocaleString('pl-PL'),
                 type: state.activeWorkoutType, exercises: JSON.parse(JSON.stringify(cur))
             });
             state.workouts[state.activeWorkoutType].forEach(e => { e.s1=''; e.s2=''; e.s3=''; });
@@ -160,53 +152,61 @@
         function render() {
             const app = document.getElementById('app');
             let html = `
-                <nav class="flex bg-black border-b border-zinc-900 shrink-0">
-                    <button onclick="state.mainTab='TRENING'; render();" class="flex-1 py-5 text-[11px] font-black uppercase ${state.mainTab === 'TRENING' ? 'nav-active text-yellow-400' : 'text-zinc-600'}">Trening</button>
-                    <button onclick="state.mainTab='HISTORIA'; render();" class="flex-1 py-5 text-[11px] font-black uppercase ${state.mainTab === 'HISTORIA' ? 'nav-active text-yellow-400' : 'text-zinc-600'}">Historia</button>
+                <nav class="flex bg-zinc-950 shrink-0">
+                    <button onclick="state.mainTab='TRENING'; render();" class="flex-1 py-3 text-[11px] font-black uppercase tracking-widest ${state.mainTab === 'TRENING' ? 'nav-active text-yellow-400' : 'text-zinc-600'}">Trening</button>
+                    <button onclick="state.mainTab='HISTORIA'; render();" class="flex-1 py-3 text-[11px] font-black uppercase tracking-widest ${state.mainTab === 'HISTORIA' ? 'nav-active text-yellow-400' : 'text-zinc-600'}">Historia</button>
                 </nav>
                 <div class="scroll-container p-4 no-scrollbar">`;
 
             if (state.mainTab === 'TRENING') {
                 html += `
-                    <div class="mb-6 p-6 rounded-[2rem] border border-zinc-900 bg-zinc-900/10 flex flex-col items-center">
-                        <span class="text-[8px] font-black text-zinc-600 uppercase mb-1 tracking-[0.2em]">Odpoczynek</span>
-                        <div id="timer-display" onclick="openTimerModal()" class="text-6xl font-digit font-black mb-4 text-white">${format(state.timeLeft)}</div>
-                        <div class="flex gap-4">
-                            <button id="timer-start-btn" onclick="startT()" class="w-16 h-16 rounded-2xl bg-yellow-400 text-black text-2xl font-bold active:scale-95 transition-all">▶</button>
-                            <button onclick="state.timeLeft=state.defaultRestTime; timerEnd=null; clearInterval(timerInterval); updateTUI();" class="w-16 h-16 rounded-2xl bg-zinc-900 text-zinc-500 font-bold border border-zinc-800 active:scale-95 transition-all">↺</button>
+                    <div class="mb-4 p-4 rounded-[1.5rem] border border-zinc-800 bg-zinc-900/10 flex flex-col items-center">
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex flex-col">
+                                <span class="text-[7px] font-black text-zinc-600 uppercase tracking-widest">Odpoczynek</span>
+                                <div id="timer-display" onclick="openTimerModal()" class="text-4xl font-digit font-black text-white leading-none">${format(state.timeLeft)}</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="state.timeLeft=state.defaultRestTime; timerEnd=null; clearInterval(timerInterval); updateTUI();" class="w-10 h-10 rounded-xl bg-zinc-900 text-zinc-600 font-bold border border-zinc-800 text-xs">↺</button>
+                                <button id="timer-start-btn" onclick="startT()" class="w-10 h-10 rounded-xl bg-yellow-400 text-black text-lg font-bold">▶</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex justify-center gap-2 mb-8">
-                        ${['TRENING A', 'TRENING B', 'TRENING C'].map(t => `<button onclick="state.activeWorkoutType='${t}'; render();" class="px-5 py-3 rounded-xl text-[10px] font-black border uppercase ${state.activeWorkoutType===t?'bg-yellow-400 text-black border-yellow-400':'bg-zinc-900 text-zinc-600 border-zinc-800'}">${t}</button>`).join('')}
+                    <div class="flex justify-center gap-2 mb-6">
+                        ${['TRENING A', 'TRENING B', 'TRENING C'].map(t => `<button onclick="state.activeWorkoutType='${t}'; render();" class="px-4 py-2 rounded-lg text-[9px] font-black border uppercase ${state.activeWorkoutType===t?'bg-yellow-400 text-black border-yellow-400':'bg-zinc-900 text-zinc-600 border-zinc-800'}">${t}</button>`).join('')}
                     </div>
-                    <div class="space-y-6">
+                    <div class="space-y-4">
                         ${state.workouts[state.activeWorkoutType].map((ex, i) => `
-                            <div class="app-card p-5 rounded-3xl">
-                                <div class="flex justify-between items-center mb-5">
-                                    <input type="text" value="${ex.name}" onchange="state.workouts['${state.activeWorkoutType}'][${i}].name=this.value; save();" class="edit-input border-l-4 border-yellow-400 pl-3 text-sm">
-                                    <div class="flex gap-2">
-                                        <button onclick="duplicate('${state.activeWorkoutType}', ${i})" class="w-10 h-10 bg-zinc-900 rounded-xl text-zinc-500 border border-zinc-800 flex items-center justify-center">📋</button>
-                                        <button onclick="startT(state.defaultRestTime)" class="w-10 h-10 bg-yellow-400/10 rounded-xl text-yellow-400 border border-yellow-400/20 flex items-center justify-center">⏱</button>
+                            <div class="app-card p-4 rounded-2xl">
+                                <div class="flex justify-between items-center mb-4">
+                                    <input type="text" value="${ex.name}" onchange="state.workouts['${state.activeWorkoutType}'][${i}].name=this.value; save();" class="edit-input border-l-2 border-yellow-400 pl-2 text-xs">
+                                    <div class="flex gap-1.5">
+                                        <button onclick="duplicate('${state.activeWorkoutType}', ${i})" class="w-8 h-8 bg-zinc-900 rounded-lg text-zinc-500 border border-zinc-800 flex items-center justify-center text-xs">📋</button>
+                                        <button onclick="startT(state.defaultRestTime)" class="w-8 h-8 bg-yellow-400/10 rounded-lg text-yellow-400 border border-yellow-400/20 flex items-center justify-center text-xs">⏱</button>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-3 gap-3">
+                                <div class="grid grid-cols-3 gap-2">
                                     ${[1,2,3].map(n => `<input type="text" placeholder="--" value="${ex['s'+n]}" oninput="state.workouts['${state.activeWorkoutType}'][${i}].s${n}=this.value; save();" class="serie-input w-full">`).join('')}
                                 </div>
                             </div>
                         `).join('')}
-                        <button onclick="saveSession()" class="w-full bg-yellow-400 py-6 rounded-3xl font-black text-black uppercase italic shadow-2xl active:scale-95 transition-all mb-10">Zapisz trening</button>
+                        <button onclick="saveSession()" class="w-full bg-yellow-400 py-5 rounded-2xl font-black text-black uppercase italic active:scale-[0.98] transition-all">Zapisz sesję</button>
                     </div>`;
             } else {
                 html += `
-                    <div class="space-y-4">
-                        ${state.history.length === 0 ? '<div class="py-20 text-center opacity-10 font-black italic uppercase">Brak sesji</div>' : state.history.map(h => `
-                            <div class="bg-zinc-950 rounded-3xl border border-zinc-900 overflow-hidden shadow-lg">
-                                <div class="bg-zinc-900/50 p-5 flex justify-between items-center border-b border-zinc-800">
-                                    <div><span class="text-[10px] font-black text-yellow-400 uppercase block tracking-tighter">${h.type}</span><span class="text-[9px] text-zinc-600 font-bold">${h.date}</span></div>
-                                    <button onclick="if(confirm('Usunąć?')){state.history=state.history.filter(it=>it.id!==${h.id}); save(); render();}" class="text-zinc-800 px-2 text-xl">&times;</button>
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="const b=new Blob([JSON.stringify(state)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='backup.json'; a.click();" class="flex-1 bg-zinc-900 py-3 rounded-xl text-[9px] font-black uppercase border border-zinc-800 text-zinc-500">Eksport</button>
+                        <label class="flex-1 bg-zinc-900 py-3 rounded-xl text-[9px] font-black uppercase border border-zinc-800 text-center text-zinc-500 cursor-pointer">Import<input type="file" class="hidden" onchange="const r=new FileReader(); r.onload=(e)=>{state=JSON.parse(e.target.result); save(); render();}; r.readAsText(this.files[0]);"></label>
+                    </div>
+                    <div class="space-y-3">
+                        ${state.history.length === 0 ? '<div class="py-10 text-center opacity-10 font-black italic uppercase">Brak sesji</div>' : state.history.map(h => `
+                            <div class="bg-zinc-950 rounded-2xl border border-zinc-900 overflow-hidden">
+                                <div class="bg-zinc-900/50 p-4 flex justify-between items-center border-b border-zinc-800">
+                                    <div><span class="text-[9px] font-black text-yellow-400 uppercase block">${h.type}</span><span class="text-[8px] text-zinc-600 font-bold">${h.date}</span></div>
+                                    <button onclick="if(confirm('Usunąć?')){state.history=state.history.filter(it=>it.id!==${h.id}); save(); render();}" class="text-zinc-800 px-1 text-lg">&times;</button>
                                 </div>
-                                <div class="p-5 space-y-3">
-                                    ${h.exercises.map(e => `<div class="flex justify-between text-[11px] border-b border-zinc-900/40 pb-2 last:border-0"><span class="text-zinc-500 italic text-[10px]">${e.name}</span><span class="font-black text-white">${[e.s1,e.s2,e.s3].filter(v=>v).join(' | ') || '-'}</span></div>`).join('')}
+                                <div class="p-4 space-y-2">
+                                    ${h.exercises.map(e => `<div class="flex justify-between text-[10px] border-b border-zinc-900/40 pb-1 last:border-0"><span class="text-zinc-500 italic">${e.name}</span><span class="font-black text-white">${[e.s1,e.s2,e.s3].filter(v=>v).join(' | ') || '-'}</span></div>`).join('')}
                                 </div>
                             </div>
                         `).join('')}
