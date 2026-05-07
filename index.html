@@ -41,11 +41,10 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .font-digit { font-family: 'Orbitron', sans-serif; }
         
-        /* Poprawione pole nazwy ćwiczenia */
         .exercise-title-input {
             background: transparent; border: none; color: white; 
             font-weight: 900; text-transform: uppercase; font-style: italic;
-            outline: none; flex: 1; min-width: 0; /* min-width: 0 pozwala na prawidłowe działanie flex-grow */
+            outline: none; flex: 1; min-width: 0;
             font-size: 0.875rem; line-height: 1.25rem;
         }
 
@@ -74,6 +73,27 @@
             background: #121214; border: 1px solid #27272a; padding: 2rem;
             border-radius: 2.5rem; width: 100%; max-width: 320px;
         }
+
+        .add-btn {
+            background: rgba(39, 39, 42, 0.3);
+            border: 1px dashed #3f3f46;
+            color: #a1a1aa;
+            padding: 1rem;
+            border-radius: 1.25rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .delete-btn {
+            color: #ef4444;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+        }
+        .delete-btn:active { opacity: 1; }
     </style>
 </head>
 <body>
@@ -97,7 +117,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'iphone_max_workout_v4';
+        const STORAGE_KEY = 'iphone_max_workout_v5';
         const defaultPlan = {
             'TRENING A': ['Przysiad', 'Podciąganie', 'Rozpiętki skos', 'Y-Raise skos', 'Łydki'],
             'TRENING B': ['Martwy ciąg', 'Dipy', 'Wyciskanie hantle', 'Biceps 7x7x7', 'Zwis brzuch'],
@@ -112,6 +132,7 @@
         let timerInterval = null;
         let timerEnd = null;
 
+        // Initialize workouts if empty
         if (!Object.keys(state.workouts).length) {
             for (let t in defaultPlan) state.workouts[t] = defaultPlan[t].map(name => ({ name, s1: '', s2: '', s3: '' }));
         }
@@ -165,6 +186,18 @@
             save(); render();
         };
 
+        const addExercise = () => {
+            state.workouts[state.activeWorkoutType].push({ name: 'NOWE ĆWICZENIE', s1: '', s2: '', s3: '' });
+            save(); render();
+        };
+
+        const removeExercise = (i) => {
+            if (confirm('Czy na pewno usunąć to ćwiczenie z planu?')) {
+                state.workouts[state.activeWorkoutType].splice(i, 1);
+                save(); render();
+            }
+        };
+
         const saveSession = () => {
             const cur = state.workouts[state.activeWorkoutType];
             if (!cur.some(e => e.s1 || e.s2 || e.s3)) return;
@@ -172,6 +205,7 @@
                 id: Date.now(), date: new Date().toLocaleString('pl-PL'),
                 type: state.activeWorkoutType, exercises: JSON.parse(JSON.stringify(cur))
             });
+            // Clear inputs for next time
             state.workouts[state.activeWorkoutType].forEach(e => { e.s1=''; e.s2=''; e.s3=''; });
             state.mainTab = 'HISTORIA'; save(); render();
         };
@@ -209,6 +243,7 @@
                         ${state.workouts[state.activeWorkoutType].map((ex, i) => `
                             <div class="app-card">
                                 <div class="flex justify-between items-center mb-4 gap-3">
+                                    <button onclick="removeExercise(${i})" class="delete-btn text-lg pr-1">✕</button>
                                     <input type="text" value="${ex.name}" onchange="state.workouts['${state.activeWorkoutType}'][${i}].name=this.value; save();" class="exercise-title-input border-l-4 border-yellow-400 pl-3">
                                     <div class="flex gap-2 shrink-0">
                                         <button onclick="duplicate('${state.activeWorkoutType}', ${i})" class="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center border border-zinc-800 text-zinc-500">📋</button>
@@ -221,8 +256,10 @@
                             </div>
                         `).join('')}
                     </div>
+
+                    <button onclick="addExercise()" class="add-btn mt-4">+ Dodaj ćwiczenie</button>
                     
-                    <button onclick="saveSession()" class="w-full bg-yellow-400 py-6 rounded-3xl font-black text-black uppercase italic shadow-2xl active:scale-[0.98] transition-all mt-6 mb-4">Zakończ trening</button>
+                    <button onclick="saveSession()" class="w-full bg-yellow-400 py-6 rounded-3xl font-black text-black uppercase italic shadow-2xl active:scale-[0.98] transition-all mt-4 mb-8">Zakończ trening</button>
                 `;
             } else {
                 html += `
